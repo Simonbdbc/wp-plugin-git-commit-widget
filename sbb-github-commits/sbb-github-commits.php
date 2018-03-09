@@ -42,28 +42,38 @@ class Github_Commits extends WP_Widget {
                 }
 
                 if (!empty($username) && !empty($repository) && !empty($number)) {
-                        require_once 'vendor/autoload.php';
-                        $api = new Milo\Github\Api;
-                    
-                        $response = $api->get('/repos/'.($username).'/'.($repository).'/commits');
-                        $repo_commits = $api->decode($response);
-                    
-                        $nb = $number;
-                        $i = 0;
-                    
-                        echo '<ul>';
-                        foreach($repo_commits as $commits) {
-                                echo '<li>';
-                                echo ($commits->commit->message);
-                                echo '<br>';
-                                echo '<small>'.($commits->commit->committer->name).'</small>';
-                                echo '</li>';
-                                $i++;
-                                if ($i >= $nb){
-                                        break;
-                                }
+
+                        if ( false === ( $cache = get_transient( 'repo_commits_cached' ))) {
+
+                                require_once 'vendor/autoload.php';
+                                $api = new Milo\Github\Api;
+
+                                $response = $api->get('/repos/'.($username).'/'.($repository).'/commits');
+                                $repo_commits = $api->decode($response);
+                                
+                                set_transient( 'repo_commits_cached', $repo_commits, 60 * 60 * 1);
                         }
-                        echo '</ul>';
+                        else {
+                            
+                                $repo_commits = get_transient('repo_commits_cached');
+                                $nb = $number;
+                                $i = 0;
+                                
+                                echo '<ul>';
+                                foreach($repo_commits as $commits) {
+                                        echo '<li>';
+                                        echo ($commits->commit->message);
+                                        echo '<br>';
+                                        echo '<small>'.($commits->commit->committer->name).'</small>';
+                                        echo '</li>';
+                                        $i++;
+                                        if ($i >= $nb){
+                                                break;
+                                        }
+                                }
+                                echo '</ul>';
+                        }
+                        
                 } else {
                         echo 'Aucun commit à afficher';
                 }

@@ -1,5 +1,6 @@
 # wp-plugin-git-commit-widget
-Simple wordpress widget who display github last commits from a selected repository
+Simple wordpress widget who display last github commits from a selected repository.
+Using wordpress transients for manage API requests.
 
 ### How to use ? 
 
